@@ -122,7 +122,7 @@ export class SwiperPanel {
 
     // // And the uri we use to load this script in the webview
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media" , "main.js")
+      vscode.Uri.joinPath(this._extensionUri, "out" , "compiled/HelloWorld.js")
     );
 
     // // Local path to css styles
@@ -150,25 +150,25 @@ export class SwiperPanel {
     return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
 				<meta charset="UTF-8">
 				<!--
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
                 -->
-                <meta http-equiv="Content-Security-Policy" content=" img-src https: data:; style-src 'unsafe-inline' ${
-                webview.cspSource
-                }; script-src 'nonce-${nonce}';">
+                <meta http-equiv="Content-Security-Policy" content=" img-src https: data:; ">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <link href="${stylesResetUri}" rel="stylesheet">
-                    <link href="${stylesMainUri}" rel="stylesheet">
                     <script nonce="${nonce}">
 
                     </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
             </head>
             <body>
-                <button>Hello World </button>
 			</body>
-            <script nonce="${nonce}" src="${scriptUri}"></script>
+      <script nonce="${nonce}" src="${scriptUri}"></script>
+           
 
 				
 			</html>`;

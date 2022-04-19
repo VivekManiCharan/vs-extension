@@ -13,6 +13,120 @@ module.exports = require("vscode");
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SidebarProvider = void 0;
+const vscode = __webpack_require__(1);
+const getNonce_1 = __webpack_require__(3);
+class SidebarProvider {
+    constructor(_extensionUri) {
+        this._extensionUri = _extensionUri;
+    }
+    resolveWebviewView(webviewView) {
+        this._view = webviewView;
+        webviewView.webview.options = {
+            // Allow scripts in the webview
+            enableScripts: true,
+            localResourceRoots: [this._extensionUri],
+        };
+        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        webviewView.webview.onDidReceiveMessage(async (data) => {
+            switch (data.type) {
+                case "onInfo": {
+                    if (!data.value) {
+                        return;
+                    }
+                    vscode.window.showInformationMessage(data.value);
+                    break;
+                }
+                case "onError": {
+                    if (!data.value) {
+                        return;
+                    }
+                    vscode.window.showErrorMessage(data.value);
+                    break;
+                }
+            }
+        });
+    }
+    revive(panel) {
+        this._view = panel;
+    }
+    _getHtmlForWebview(webview) {
+        // const styleResetUri = webview.asWebviewUri(
+        //   vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
+        // );
+        // const styleVSCodeUri = webview.asWebviewUri(
+        //   vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
+        // );
+        // const scriptUri = webview.asWebviewUri(
+        //   vscode.Uri.joinPath(this._extensionUri, "out", "compiled/sidebar.js")
+        // );
+        // const styleMainUri = webview.asWebviewUri(
+        //   vscode.Uri.joinPath(this._extensionUri, "out", "compiled/sidebar.css")
+        // );
+        // Use a nonce to only allow a specific script to be run.
+        const nonce = (0, getNonce_1.getNonce)();
+        return `<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<!--
+					Use a content security policy to only allow loading images from https or from our extension directory,
+					and only allow scripts that have a specific nonce.
+        -->
+
+        <meta http-equiv="Content-Security-Policy" content="img-src https: data:; ">
+
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+        <script nonce="${nonce}">
+          const tsvscode = acquireVsCodeApi();
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+			</head>
+      <body>
+        <div> hi </div>
+        <button type="button" class="btn btn-info">Info</button>
+        <div class="dropdown">
+  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+    Dropdown button
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+    <li><a class="dropdown-item" href="#">Action</a></li>
+    <li><a class="dropdown-item" href="#">Another action</a></li>
+    <li><a class="dropdown-item" href="#">Something else here</a></li>
+  </ul>
+</div>
+			</body>
+			</html>`;
+    }
+}
+exports.SidebarProvider = SidebarProvider;
+
+
+/***/ }),
+/* 3 */
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getNonce = void 0;
+function getNonce() {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+}
+exports.getNonce = getNonce;
+
+
+/***/ }),
+/* 4 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SwiperPanel = void 0;
 const vscode = __webpack_require__(1);
 const getNonce_1 = __webpack_require__(3);
@@ -103,7 +217,7 @@ class SwiperPanel {
     }
     _getHtmlForWebview(webview) {
         // // And the uri we use to load this script in the webview
-        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "main.js"));
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "compiled/HelloWorld.js"));
         // // Local path to css styles
         const styleResetPath = vscode.Uri.joinPath(this._extensionUri, "media", "reset.css");
         const stylesPathMainPath = vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css");
@@ -118,23 +232,25 @@ class SwiperPanel {
         return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
 				<meta charset="UTF-8">
 				<!--
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
                 -->
-                <meta http-equiv="Content-Security-Policy" content=" img-src https: data:; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
+                <meta http-equiv="Content-Security-Policy" content=" img-src https: data:; ">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <link href="${stylesResetUri}" rel="stylesheet">
-                    <link href="${stylesMainUri}" rel="stylesheet">
                     <script nonce="${nonce}">
 
                     </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
             </head>
             <body>
-                <button>Hello World </button>
 			</body>
-            <script nonce="${nonce}" src="${scriptUri}"></script>
+      <script nonce="${nonce}" src="${scriptUri}"></script>
+           
 
 				
 			</html>`;
@@ -142,24 +258,6 @@ class SwiperPanel {
 }
 exports.SwiperPanel = SwiperPanel;
 SwiperPanel.viewType = "swiper";
-
-
-/***/ }),
-/* 3 */
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getNonce = void 0;
-function getNonce() {
-    let text = '';
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 32; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
-}
-exports.getNonce = getNonce;
 
 
 /***/ })
@@ -200,7 +298,8 @@ exports.deactivate = exports.activate = void 0;
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = __webpack_require__(1);
-const swiperPanel_1 = __webpack_require__(2);
+const SideBar_1 = __webpack_require__(2);
+const swiperPanel_1 = __webpack_require__(4);
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
@@ -208,6 +307,8 @@ function activate(context) {
     let disposable = vscode.commands.registerCommand('pychat.helloWorld', () => {
         vscode.window.showInformationMessage('Hello World from pychat!');
     });
+    const sidebarProvider = new SideBar_1.SidebarProvider(context.extensionUri);
+    context.subscriptions.push(vscode.window.registerWebviewViewProvider("pychat-sidebar", sidebarProvider));
     context.subscriptions.push(disposable);
     context.subscriptions.push(vscode.commands.registerCommand('pychat.askQuestion', async () => {
         const ans = await vscode.window.showInformationMessage('Do you  want me to open Swiper Panel ? ', "Yes", "No");

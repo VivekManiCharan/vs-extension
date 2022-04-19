@@ -4,8 +4,5 @@
 (function () {
     const vscode = acquireVsCodeApi();
 
-    const button = getElementById('btn');
-    
-    button.innerText = "You Clicked it Right!";
    
 }());
